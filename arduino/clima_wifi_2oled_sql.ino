@@ -16,8 +16,8 @@
 // IMPORTANTE:
 // Utilizar la red Wi-Fi de 2.4 GHz
 
-const char* WIFI_SSID     = "Nativa Admin";
-const char* WIFI_PASSWORD = "75717571";
+const char* WIFI_SSID     = "";
+const char* WIFI_PASSWORD = "";
 
 
 // =====================================================
