@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ROBERT Clima</title>
+
+
+    <!-- Supabase -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            margin: 0;
+
+            font-family:
+                Arial,
+                sans-serif;
+
+            background:
+                #101820;
+
+            color: white;
+
+            min-height: 100vh;
+
+            padding: 20px;
+        }
+
+
+        .contenedor {
+
+            max-width: 600px;
+
+            margin:
+                auto;
+        }
+
+
+        h1 {
+
+            text-align: center;
+
+            margin-bottom: 5px;
+        }
+
+
+        .estado {
+
+            text-align: center;
+
+            margin-bottom: 25px;
+
+            color: #55d66b;
+        }
+
+
+        .principal {
+
+            background:
+                #1b2733;
+
+            border-radius: 20px;
+
+            padding: 25px;
+
+            text-align: center;
+
+            margin-bottom: 15px;
+        }
+
+
+        .temperatura {
+
+            font-size: 64px;
+
+            font-weight: bold;
+        }
+
+
+        .unidad {
+
+            font-size: 24px;
+        }
+
+
+        .descripcion {
+
+            margin-top: 10px;
+
+            font-size: 20px;
+
+            color: #bfc9d4;
+        }
+
+
+        .datos {
+
+            display: grid;
+
+            grid-template-columns:
+                1fr 1fr;
+
+            gap: 12px;
+        }
+
+
+        .dato {
+
+            background:
+                #1b2733;
+
+            border-radius: 15px;
+
+            padding: 18px;
+
+            text-align: center;
+        }
+
+
+        .dato .nombre {
+
+            color:
+                #9eabb8;
+
+            font-size:
+                14px;
+
+            margin-bottom:
+                8px;
+        }
+
+
+        .dato .valor {
+
+            font-size:
+                22px;
+
+            font-weight:
+                bold;
+        }
+
+
+        .actualizacion {
+
+            text-align:
+                center;
+
+            color:
+                #9eabb8;
+
+            font-size:
+                13px;
+
+            margin-top:
+                20px;
+        }
+
+
+        .error {
+
+            background:
+                #5c2525;
+
+            color:
+                #ffb3b3;
+
+            padding:
+                15px;
+
+            border-radius:
+                12px;
+
+            text-align:
+                center;
+
+            display:
+                none;
+        }
+
+
+        @media (max-width: 450px) {
+
+            body {
+                padding: 12px;
+            }
+
+            .temperatura {
+                font-size: 52px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="contenedor">
+
+
+    <h1>
+        ROBERT Clima
+    </h1>
+
+
+    <div
+        id="estado"
+        class="estado"
+    >
+        
+    </div>
+
+
+    <div
+        id="error"
+        class="error"
+    >
+    </div>
+
+
+    <div class="principal">
+
+        <div>
+
+            <span
+                id="temperatura"
+                class="temperatura"
+            >
+                --
+            </span>
+
+            <span class="unidad">
+                °C
+            </span>
+
+        </div>
+
+
+        <div
+            id="sensacion"
+            class="descripcion"
+        >
+            Sensación: --
+        </div>
+
+    </div>
+
+
+    <div class="datos">
+
+
+        <div class="dato">
+
+            <div class="nombre">
+                💧 Humedad
+            </div>
+
+            <div
+                id="humedad"
+                class="valor"
+            >
+                --
+            </div>
+
+        </div>
+
+
+        <div class="dato">
+
+            <div class="nombre">
+                💨 Viento
+            </div>
+
+            <div
+                id="viento"
+                class="valor"
+            >
+                --
+            </div>
+
+        </div>
+
+
+        <div class="dato">
+
+            <div class="nombre">
+                ↓ Mínima
+            </div>
+
+            <div
+                id="minima"
+                class="valor"
+            >
+                --
+            </div>
+
+        </div>
+
+
+        <div class="dato">
+
+            <div class="nombre">
+                ↑ Máxima
+            </div>
+
+            <div
+                id="maxima"
+                class="valor"
+            >
+                --
+            </div>
+
+        </div>
+
+	
+        <div class="dato">
+
+            <div class="nombre">
+                📶 Wi-Fi
+            </div>
+
+            <div
+                id="rssi"
+                class="valor"
+            >
+                --
+            </div>
+
+        </div>
+	
+
+        <div class="dato">
+
+            <div class="nombre">
+                🌤️ Código
+            </div>
+
+            <div
+                id="codigo"
+                class="valor"
+            >
+                --
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <div
+        id="actualizacion"
+        class="actualizacion"
+    >
+        Última actualización: --
+    </div>
+
+
+</div>
+
+
+
+<script>
+
+
+// ==================================================
+// SUPABASE
+// ==================================================
+
+
+// REEMPLAZAR ESTOS DOS VALORES
+
+const SUPABASE_URL =
+    "https://xvztoywavhepjrnynuqf.supabase.co";
+
+
+const SUPABASE_KEY =
+    "sb_publishable_pNAU538ou89EPlKLWYm5Gg_rgJy-uGN";
+
+
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+
+// ==================================================
+// OBTENER ÚLTIMA MEDICIÓN
+// ==================================================
+
+async function obtenerDatos() {
+
+
+    const {
+
+        data,
+        error
+
+    } = await supabaseClient
+
+        .from("telemetria")
+
+        .select("*")
+
+        .order(
+            "creado_en",
+            {
+                ascending: false
+            }
+        )
+
+        .limit(1);
+
+
+
+    if (error) {
+
+        mostrarError(
+            error.message
+        );
+
+        return;
+    }
+
+
+    if (
+        !data ||
+        data.length === 0
+    ) {
+
+        mostrarError(
+            "No hay datos disponibles."
+        );
+
+        return;
+    }
+
+
+    mostrarDatos(
+        data[0]
+    );
+
+}
+
+
+
+// ==================================================
+// MOSTRAR DATOS
+// ==================================================
+
+function mostrarDatos(
+    datos
+) {
+
+
+    document.getElementById(
+        "temperatura"
+    ).textContent =
+        Number(
+            datos.temperatura
+        ).toFixed(1);
+
+
+    document.getElementById(
+        "sensacion"
+    ).textContent =
+        "Sensación: " +
+        Number(
+            datos.sensacion
+        ).toFixed(1) +
+        " °C";
+
+
+    document.getElementById(
+        "humedad"
+    ).textContent =
+        Number(
+            datos.humedad
+        ).toFixed(0) +
+        " %";
+
+
+    document.getElementById(
+        "viento"
+    ).textContent =
+        Number(
+            datos.viento
+        ).toFixed(1) +
+        " km/h";
+
+
+    document.getElementById(
+        "minima"
+    ).textContent =
+        Number(
+            datos.minima
+        ).toFixed(1) +
+        " °C";
+
+
+    document.getElementById(
+        "maxima"
+    ).textContent =
+        Number(
+            datos.maxima
+        ).toFixed(1) +
+        " °C";
+
+
+    document.getElementById(
+        "rssi"
+    ).textContent =
+        datos.wifi_rssi +
+        " dBm";
+
+
+    document.getElementById(
+        "codigo"
+    ).textContent =
+        datos.codigo_clima;
+
+
+    document.getElementById(
+        "actualizacion"
+    ).textContent =
+        "Última actualización: " +
+        formatearFecha(
+            datos.creado_en
+        );
+
+
+
+
+
+    document.getElementById(
+        "error"
+    ).style.display =
+        "none";
+
+}
+
+
+
+// ==================================================
+// FORMATEAR FECHA
+// ==================================================
+
+function formatearFecha(
+    fecha
+) {
+
+    const fechaLocal =
+        new Date(
+            fecha
+        );
+
+
+    return fechaLocal.toLocaleString(
+        "es-AR",
+        {
+            dateStyle:
+                "short",
+
+            timeStyle:
+                "medium"
+        }
+    );
+
+}
+
+
+
+// ==================================================
+// MOSTRAR ERROR
+// ==================================================
+
+function mostrarError(
+    mensaje
+) {
+
+    document.getElementById(
+        "error"
+    ).textContent =
+        "Error: " +
+        mensaje;
+
+
+    document.getElementById(
+        "error"
+    ).style.display =
+        "block";
+
+
+    document.getElementById(
+        "estado"
+    ).textContent =
+        "● ERROR DE CONEXIÓN";
+
+
+    document.getElementById(
+        "estado"
+    ).style.color =
+        "#ff6666";
+
+}
+
+
+
+// ==================================================
+// ACTUALIZACIÓN AUTOMÁTICA
+// ==================================================
+
+obtenerDatos();
+
+
+setInterval(
+    obtenerDatos,
+    30000
+);
+
+
+</script>
+
+
+</body>
+
+</html>
